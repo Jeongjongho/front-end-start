@@ -1,28 +1,46 @@
-var btnSearch = $('search');
-var addData = $('addMore');
-var pageNum = 1;
+function $(id) {
+    return document.getElementById(id);
+}
 
-btnSearch.addEventListener('click', search);
-addData.addEventListener('click', addPage);
+var apiKey = "839c06cf04a7579cd86d662465063e9d";
+var nowPage = 1;
 
-function addPage(event){
-  pageNum=pageNum+1;
-  search(event);
-  };
+var searchForm = $("search_bar");
+var searchText = $("search_text");
+var itemsForm = $("items");
+var moreForm = $("more");
 
-function search(event){
-  var keyword = $('keyword').value;
-  var listTemplate = $('listTemplate').innerHTML;
-  var DaumAPI = "https://apis.daum.net/search/board?apikey=fdada071f31587e4d580f801f1a99542&q="+keyword+"&output=json&pageno="+pageNum;
+var itemsTpl = $("itemsTpl").innerHTML;
+var moreBtn = document.createElement("button");
+moreBtn.innerHTML = "더보기";
 
-console.log(keyword);
+$("items").innerHTML = "";
 
-getJSON(DaumAPI , function(DaumData){
+function searching(query) {
+    var url = "https://apis.daum.net/search/web?apikey="+apiKey+"&output=json&result=10&q="+query+"&pageno="+nowPage;
+    getJSON(url, displayItems);
+}
 
-  console.log(DaumData.channel.item)
+function displayItems(data) {
+    var html = tmpl(itemsTpl, {
+        items : data.channel.item
+    });
+        moreForm.appendChild(moreBtn);
+    itemsForm.innerHTML += html;
+}
 
-  var html = tmpl(listTemplate, {list: DaumData.channel.item});
+var beforeSearchText = '';
+moreBtn.addEventListener('click', function(ev) {
+    ++nowPage;
+    debugger;
 
-  $('wrap').innerHTML += html;
+    searching(beforeSearchText);
+    if(nowPage >= 500) moreForm.innerHTML = '';
 });
-};
+
+searchForm.addEventListener('submit', function(ev) {
+    nowPage = 1;
+    itemsForm.innerHTML = '';
+    searching(searchText.value);
+    beforeSearchText = searchText.value;
+});
